@@ -90,7 +90,7 @@
     
     }
 
-    async function detectFromCamera(video, scansPerSecondLimit = 0) {
+    async function runCamera(video, scansPerSecondLimit = 0) {
 
       let stream = await navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: "environment" } 
@@ -107,20 +107,9 @@
         (resolve) => video.addEventListener('play', resolve, {once: true})
       );
       
-      while (streamRunning) {    
-        let scanResult   = await self.detect(video),
-            scanDuration = scanResult._decodeDuration;
-
-        startTest(scanResult);
-            
-        if (minMs > scanDuration) {
-          await new Promise(
-            (r) => setTimeout(r, minMs - scanDuration)
-          );
-        }
-
-      }
     }
+
+    runCamera(document.querySelector('video'), 0.25);
 
     document.querySelector('img, video').addEventListener('click', startTest);
 
