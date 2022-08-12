@@ -1,0 +1,129 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Test</title>
+
+    <script src="lib/text_detector.js"></script>
+
+    <style>
+      html, body {
+        margin : 0;
+        padding : 0;
+      }
+
+      * {
+        box-sizing : border-box;
+      }
+
+
+      body > div {
+        position        : absolute;
+        background      : rgba(255, 255, 255, 0.8);
+        border          : solid 1px rgba(255, 0, 0, 0.95);
+        display         : grid;
+        place-content   : center;
+        place-items     : center;
+        font-size       : 4vh;
+        font-family     : arial;
+        animation       : go-in 0.5s 0s ease 1;
+        backdrop-filter : blur(5px);
+      }
+
+      @keyframes go-in {
+        from {
+          opacity : 0;
+        }
+
+        to {
+          opacity : 1;
+        }
+      }
+
+    </style>
+  </head>
+
+  <body>
+    <!--<img src="example.jpg" />-->
+    <video></video>
+  </body>
+
+  <script>
+      
+    // debug ---
+
+    let done = false, tc = new TextDetector();
+
+    async function startTest() {
+      let img  = document.querySelector('img, video'),
+          divs = Array.from(document.querySelectorAll('div')),
+          res  = await tc.detect(img);
+
+      console.log(res);
+
+      for (let d of divs) {
+        d.parentNode.removeChild(d);
+      }
+
+      for (let r of res) {
+        
+        if (r instanceof Blob) {
+          let img = new Image();
+
+          img.src = URL.createObjectURL(r);
+
+          document.body.append(img);
+        }
+
+        if (!r.boundingBox) continue;
+
+        let d = document.createElement('div');
+        
+        d.style.left   = r.boundingBox.left   + 'px';
+        d.style.top    = r.boundingBox.top  + 'px';
+        d.style.width  = r.boundingBox.width  + 'px';
+        d.style.height = r.boundingBox.height + 'px';
+
+        d.textContent = r.rawValue;
+
+        document.body.appendChild(d);
+      }
+    
+    }
+
+    async function detectFromCamera(video, scansPerSecondLimit = 0) {
+
+      let stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: "environment" } 
+      }), 
+      streamRunning = true, 
+      self          = new TextDetector(), 
+      minMs         = 1000 / (scansPerSecondLimit || 1000);
+
+      video.srcObject = stream;
+      video.setAttribute('playsinline', true);
+      video.play();
+    
+      await new Promise(
+        (resolve) => video.addEventListener('play', resolve, {once: true})
+      );
+      
+      while (streamRunning) {    
+        let scanResult   = await self.detect(video),
+            scanDuration = scanResult._decodeDuration;
+
+        startTest(scanResult);
+            
+        if (minMs > scanDuration) {
+          await new Promise(
+            (r) => setTimeout(r, minMs - scanDuration)
+          );
+        }
+
+      }
+    }
+
+    document.querySelector('img, video').addEventListener('click', startTest);
+
+  </script>
+
+</html>
