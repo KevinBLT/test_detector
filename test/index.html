@@ -43,7 +43,7 @@
   </head>
 
   <body>
-    <!--<img src="example.jpg" />-->
+    <img onerror="this.parentNode.removeChild(this)" src="test.jpg" /><br>
     <video></video>
   </body>
 
@@ -91,6 +91,7 @@
     }
 
     async function runCamera(video, scansPerSecondLimit = 0) {
+      if (!video) return;
 
       let stream = await navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: "environment" } 
