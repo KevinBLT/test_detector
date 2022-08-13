@@ -29,6 +29,22 @@
         backdrop-filter : blur(5px);
       }
 
+      body > button {
+        position   : absolute;
+        left       : 40px;
+        top        : 40px;
+        padding    : 10px;
+        min-width  : 200px;
+        transition : all 1s;
+        opacity    : 1;
+      }
+
+      body > button:disabled {
+        pointer-events : none;
+        opacity        : 0.9;
+        
+      }
+
       @keyframes go-in {
         from {
           opacity : 0;
@@ -45,20 +61,29 @@
   <body>
     <img onerror="this.parentNode.removeChild(this)" src="2test.jpg" /><br>
     <video></video>
+    <button>Detect</button>
   </body>
 
   <script>
       
     // debug ---
 
-    let done = false, tc = new TextDetector();
+    let done = false, tc = new TextDetector(), btn = document.querySelector('button');
 
     async function startTest() {
+      if (btn.disabled) return;
+      
+      btn.disabled    = true;
+      btn.textContent = 'Detecting ...';
+
       let img  = document.querySelector('img, video'),
           divs = Array.from(document.querySelectorAll('div')),
           res  = await tc.detect(img);
 
       console.log(res);
+
+      btn.textContent = 'Detected after: ' + res._decodeDuration + 'ms';
+      btn.disabled    = false;
 
       for (let d of divs) {
         d.parentNode.removeChild(d);
@@ -112,7 +137,7 @@
 
     runCamera(document.querySelector('video'), 0.25);
 
-    document.body.addEventListener('click', startTest);
+    btn.addEventListener('click', startTest);
 
   </script>
 
