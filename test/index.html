@@ -61,7 +61,7 @@
   </head>
 
   <body>
-    <img onerror="this.parentNode.removeChild(this)" src="test.jpg" /><br>
+    <img onerror="this.parentNode.removeChild(this)" onload="document.querySelector('video').parentNode.removeChild(document.querySelector('video'))" src="test.jpg" /><br>
     <video></video>
     <button>Detect</button>
   </body>
